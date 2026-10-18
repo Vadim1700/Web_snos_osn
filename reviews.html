@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Отзывы - Maestro</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="reviews.css">
+    
+    <!-- Стили для новой кнопки и модального окна -->
+    <style>
+        /* Фиксированная кнопка "Написать отзыв" */
+        #open-review-btn {
+            position: fixed;
+            right: 20px;
+            bottom: 80px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 100;
+            transition: background-color 0.2s;
+        }
+        #open-review-btn:hover {
+            background-color: #0056b3;
+        }
+
+        /* Модальное окно */
+        #review-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        #review-modal.active {
+            visibility: visible;
+            opacity: 1;
+        }
+        .modal-content {
+            background: #1a1a1a;
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 450px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            position: relative;
+        }
+        .modal-content h2 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 22px;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #ccc;
+            font-size: 14px;
+        }
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            background: #2a2a2a;
+            border: 1px solid #3a3a3a;
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        .modal-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+        .modal-actions button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            flex: 1;
+            margin: 0 5px;
+        }
+        .modal-actions button:first-child {
+            background-color: #3a3a3a;
+            color: white;
+        }
+        .modal-actions button:last-child {
+            background-color: #28a745;
+            color: white;
+        }
+        .modal-actions button:hover {
+            opacity: 0.9;
+        }
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: transparent;
+            border: none;
+            font-size: 24px;
+            color: #888;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+        .close-btn:hover {
+            background: #333;
+            color: white;
+        }
+
+        /* Плашка об успешной отправке */
+        #success-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 300;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        #success-overlay.active {
+            visibility: visible;
+            opacity: 1;
+        }
+        .success-box {
+            background: #1a1a1a;
+            padding: 40px 30px;
+            border-radius: 12px;
+            text-align: center;
+            color: white;
+            max-width: 90%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .success-box p {
+            font-size: 18px;
+            margin-bottom: 25px;
+        }
+        .success-box button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <div class="logo">
+            <div class="logo-square"></div>
+            <span>Maestro</span>
+        </div>
+        <div class="online-status">
+            <span id="current-time">--:--:--</span>
+        </div>
+    </header>
+
+    <main class="reviews-content">
+        <h1>Отзывы пользователей</h1>
+        <p class="reviews-subtitle">Ваши данные не сохраняются. Все отзывы полностью анонимны.</p>
+
+        <div class="reviews-list">
+            <!-- Существующие карточки отзывов -->
+              <div class="review-card">
+                <div class="review-avatar"><img src="Admin-Profile-Vector-PNG-Isolated-HD.png" alt="Avatar"></div>
+                <div class="review-body">
+                    <div class="review-header"><span class="review-nick">lowkeyvibe</span></div>
+                    <div class="review-text">Все четко работает, пока вообще никаких проблем не было. Удобно сделано.</div>
+                </div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-avatar"><img src="Admin-Profile-Vector-PNG-Isolated-HD.png" alt="Avatar"></div>
+                <div class="review-body">
+                    <div class="review-header"><span class="review-nick">Анонимный пользователь</span></div>
+                    <div class="review-text">поиск реально быстрый, не пришлось долго сидеть и искать нужное</div>
+                </div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-avatar"><img src="Admin-Profile-Vector-PNG-Isolated-HD.png" alt="Avatar"></div>
+                <div class="review-body">
+                    <div class="review-header"><span class="review-nick">whoisnvr</span></div>
+                    <div class="review-text">если честно думал будет хуже, но оказалось вполне годно</div>
+                </div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-avatar"><img src="Admin-Profile-Vector-PNG-Isolated-HD.png" alt="Avatar"></div>
+                <div class="review-body">
+                    <div class="review-header"><span class="review-nick">voidxera</span></div>
+                    <div class="review-text">Норм тема, интерфейс приятный и разобраться легко.</div>
+                </div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-avatar"><img src="Admin-Profile-Vector-PNG-Isolated-HD.png" alt="Avatar"></div>
+                <div class="review-body">
+                    <div class="review-header"><span class="review-nick">Анонимный пользователь</span></div>
+                    <div class="review-text">Пользуюсь уже какое то время, все устраивает. Надеюсь будут обновления.</div>
+                </div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-avatar"><img src="Admin-Profile-Vector-PNG-Isolated-HD.png" alt="Avatar"></div>
+                <div class="review-body">
+                    <div class="review-header"><span class="review-nick">deadinside.mp3</span></div>
+                    <div class="review-text">имба, все понятно и работает как надо</div>
+                </div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-avatar"><img src="Admin-Profile-Vector-PNG-Isolated-HD.png" alt="Avatar"></div>
+                <div class="review-body">
+                    <div class="review-header"><span class="review-nick">notyourghost</span></div>
+                    <div class="review-text">Зашел посмотреть чисто из интереса, в итоге понравилось.</div>
+                </div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-avatar"><img src="Admin-Profile-Vector-PNG-Isolated-HD.png" alt="Avatar"></div>
+                <div class="review-body">
+                    <div class="review-header"><span class="review-nick">Анонимный пользователь</span></div>
+                    <div class="review-text">поиск выдает результаты довольно быстро, это удобно</div>
+                </div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-avatar"><img src="Admin-Profile-Vector-PNG-Isolated-HD.png" alt="Avatar"></div>
+                <div class="review-body">
+                    <div class="review-header"><span class="review-nick">4amvoid</span></div>
+                    <div class="review-text">Впринципе хороший сервис, ничего лишнего нету.</div>
+                </div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-avatar"><img src="Admin-Profile-Vector-PNG-Isolated-HD.png" alt="Avatar"></div>
+                <div class="review-body">
+                    <div class="review-header"><span class="review-nick">cryformore</span></div>
+                    <div class="review-text">Все норм, иногда захожу. Пока минусов не заметил.</div>
+                </div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-avatar"><img src="Admin-Profile-Vector-PNG-Isolated-HD.png" alt="Avatar"></div>
+                <div class="review-body">
+                    <div class="review-header"><span class="review-nick">Анонимный пользователь</span></div>
+                    <div class="review-text">Сначала не понял как пользоваться, но потом разобрался. Все просто оказалось.</div>
+                </div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-avatar"><img src="Admin-Profile-Vector-PNG-Isolated-HD.png" alt="Avatar"></div>
+                <div class="review-body">
+                    <div class="review-header"><span class="review-nick">lostinweb</span></div>
+                    <div class="review-text">прикольно сделано, особенно оформление. выглядит аккуратно</div>
+                </div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-avatar"><img src="Admin-Profile-Vector-PNG-Isolated-HD.png" alt="Avatar"></div>
+                <div class="review-body">
+                    <div class="review-header"><span class="review-nick">nobodyx</span></div>
+                    <div class="review-text">Работает стабильно, за несколько дней проблем не возникло.</div>
+                </div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-avatar"><img src="Admin-Profile-Vector-PNG-Isolated-HD.png" alt="Avatar"></div>
+                <div class="review-body">
+                    <div class="review-header"><span class="review-nick">Анонимный пользователь</span></div>
+                    <div class="review-text">Удобная штука, экономит время. Мне понравилось.</div>
+                </div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-avatar"><img src="Admin-Profile-Vector-PNG-Isolated-HD.png" alt="Avatar"></div>
+                <div class="review-body">
+                    <div class="review-header"><span class="review-nick">blvckwave</span></div>
+                    <div class="review-text">поиск работает шустро, долго ждать не приходится</div>
+                </div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-avatar"><img src="Admin-Profile-Vector-PNG-Isolated-HD.png" alt="Avatar"></div>
+                <div class="review-body">
+                    <div class="review-header"><span class="review-nick">sleepless.exe</span></div>
+                    <div class="review-text">Честно не ожидал что будет настолько удобно.</div>
+                </div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-avatar"><img src="Admin-Profile-Vector-PNG-Isolated-HD.png" alt="Avatar"></div>
+                <div class="review-body">
+                    <div class="review-header"><span class="review-nick">Анонимный пользователь</span></div>
+                    <div class="review-text">Все понятно даже без инструкции, это большой плюс.</div>
+                </div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-avatar"><img src="Admin-Profile-Vector-PNG-Isolated-HD.png" alt="Avatar"></div>
+                <div class="review-body">
+                    <div class="review-header"><span class="review-nick">zero.mood</span></div>
+                    <div class="review-text">норм сервис, думаю буду пользоваться дальше</div>
+                </div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-avatar"><img src="Admin-Profile-Vector-PNG-Isolated-HD.png" alt="Avatar"></div>
+                <div class="review-body">
+                    <div class="review-header"><span class="review-nick">midnightx</span></div>
+                    <div class="review-text">Вроде простая вещь, но сделано удобно. Все на своих местах.</div>
+                </div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-avatar"><img src="Admin-Profile-Vector-PNG-Isolated-HD.png" alt="Avatar"></div>
+                <div class="review-body">
+                    <div class="review-header"><span class="review-nick">Анонимный пользователь</span></div>
+                    <div class="review-text">Пока все хорошо, хотелось бы только побольше функций в будущем.</div>
+                </div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-avatar"><img src="Admin-Profile-Vector-PNG-Isolated-HD.png" alt="Avatar"></div>
+                <div class="review-body">
+                    <div class="review-header"><span class="review-nick">nvrmind</span></div>
+                    <div class="review-text">зашел на пару минут, в итоге просидел дольше ахах</div>
+                </div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-avatar"><img src="Admin-Profile-Vector-PNG-Isolated-HD.png" alt="Avatar"></div>
+                <div class="review-body">
+                    <div class="review-header"><span class="review-nick">ghostmode</span></div>
+                    <div class="review-text">Поиск удобный, нужное находится быстро. В целом все норм.</div>
+                </div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-avatar"><img src="Admin-Profile-Vector-PNG-Isolated-HD.png" alt="Avatar"></div>
+                <div class="review-body">
+                    <div class="review-header"><span class="review-nick">Анонимный пользователь</span></div>
+                    <div class="review-text">Мне зашло, ничего не лагает и интерфейс понятный.</div>
+                </div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-avatar"><img src="Admin-Profile-Vector-PNG-Isolated-HD.png" alt="Avatar"></div>
+                <div class="review-body">
+                    <div class="review-header"><span class="review-nick">coldzera</span></div>
+                    <div class="review-text">выглядит достойно, надеюсь проект не забросят</div>
+                </div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-avatar"><img src="Admin-Profile-Vector-PNG-Isolated-HD.png" alt="Avatar"></div>
+                <div class="review-body">
+                    <div class="review-header"><span class="review-nick">offlinewrld</span></div>
+                    <div class="review-text">Все работает как надо, особо добавить нечего.</div>
+                </div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-avatar"><img src="Admin-Profile-Vector-PNG-Isolated-HD.png" alt="Avatar"></div>
+                <div class="review-body">
+                    <div class="review-header"><span class="review-nick">Анонимный пользователь</span></div>
+                    <div class="review-text">Впринципе неплохо, разобрался быстро и пользоваться удобно.</div>
+                </div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-avatar"><img src="Admin-Profile-Vector-PNG-Isolated-HD.png" alt="Avatar"></div>
+                <div class="review-body">
+                    <div class="review-header"><span class="review-nick">hiddenphase</span></div>
+                    <div class="review-text">четкий сервис, поиск особенно понравился</div>
+                </div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-avatar"><img src="Admin-Profile-Vector-PNG-Isolated-HD.png" alt="Avatar"></div>
+                <div class="review-body">
+                    <div class="review-header"><span class="review-nick">404angel</span></div>
+                    <div class="review-text">Сначала отнесся скептически, но в итоге нормальный проект.</div>
+                </div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-avatar"><img src="Admin-Profile-Vector-PNG-Isolated-HD.png" alt="Avatar"></div>
+                <div class="review-body">
+                    <div class="review-header"><span class="review-nick">Анонимный пользователь</span></div>
+                    <div class="review-text">все гуд, пока каких то проблем не заметил</div>
+                </div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-avatar"><img src="Admin-Profile-Vector-PNG-Isolated-HD.png" alt="Avatar"></div>
+                <div class="review-body">
+                    <div class="review-header"><span class="review-nick">voidrunner</span></div>
+                    <div class="review-text">Нравится что нету лишних элементов, все выглядит минималистично.</div>
+                </div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-avatar"><img src="Admin-Profile-Vector-PNG-Isolated-HD.png" alt="Avatar"></div>
+                <div class="review-body">
+                    <div class="review-header"><span class="review-nick">wavemafia</span></div>
+                    <div class="review-text">Поиск работает быстро, результаты не приходится ждать вечность.</div>
+                </div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-avatar"><img src="Admin-Profile-Vector-PNG-Isolated-HD.png" alt="Avatar"></div>
+                <div class="review-body">
+                    <div class="review-header"><span class="review-nick">Анонимный пользователь</span></div>
+                    <div class="review-text">Пользоваться легко, даже особо разбиратся не пришлось.</div>
+                </div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-avatar"><img src="Admin-Profile-Vector-PNG-Isolated-HD.png" alt="Avatar"></div>
+                <div class="review-body">
+                    <div class="review-header"><span class="review-nick">darkluv</span></div>
+                    <div class="review-text">норм тема, добавил себе чтобы потом не потерять</div>
+                </div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-avatar"><img src="Admin-Profile-Vector-PNG-Isolated-HD.png" alt="Avatar"></div>
+                <div class="review-body">
+                    <div class="review-header"><span class="review-nick">s1lentwave</span></div>
+                    <div class="review-text">В целом все понравилось, было бы интересно увидеть новые функции.</div>
+                </div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-avatar"><img src="Admin-Profile-Vector-PNG-Isolated-HD.png" alt="Avatar"></div>
+                <div class="review-body">
+                    <div class="review-header"><span class="review-nick">Анонимный пользователь</span></div>
+                    <div class="review-text">интерфейс удобный, все достаточно понятно. пока все устраивает</div>
+                </div>
+            </div>
+
+            <div class="review-card">
+                <div class="review-avatar"><img src="Admin-Profile-Vector-PNG-Isolated-HD.png" alt="Avatar"></div>
+                <div class="review-body">
+                    <div class="review-header"><span class="review-nick">zeroframe</span></div>
+                    <div class="review-text">Короче все норм, работает быстро и выглядит хорошо.</div>
+                </div>
+            </div>
+            <!-- ... остальные карточки ... -->
+        </div>
+    </main>
+
+    <!-- НОВАЯ КНОПКА -->
+    <button id="open-review-btn">Написать отзыв</button>
+
+    <!-- ФИКСИРОВАННАЯ КНОПКА НАЗАД -->
+    <div class="footer-home-link-fixed" onclick="window.location.href='index.html'">
+        ← На главную
+    </div>
+
+    <!-- МОДАЛЬНОЕ ОКНО ОТПРАВКИ ОТЗЫВА -->
+    <div id="review-modal">
+        <div class="modal-content">
+            <button class="close-btn" id="close-modal-btn">&times;</button>
+            <h2>Оставить отзыв</h2>
+            <form id="review-form">
+                <div class="form-group">
+                    <label for="username-input">Имя пользователя</label>
+                    <input type="text" id="username-input" placeholder="Например: user123" required>
+                </div>
+                <div class="form-group">
+                    <label for="review-textarea">Текст отзыва</label>
+                    <textarea id="review-textarea" placeholder="Поделитесь своим мнением..." required></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" id="cancel-btn">Отмена</button>
+                    <button type="submit">Отправить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ПЛАШКА ОБ УСПЕШНОЙ ОТПРАВКЕ -->
+    <div id="success-overlay">
+        <div class="success-box">
+            <h2>Спасибо!</h2>
+            <p>Отзыв отправлен на модерацию. После прохождения модерации он появится в списке отзывов.</p>
+            <button id="close-success-btn">Закрыть</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+
+    <!-- Скрипт управления модальным окном -->
+    <script>
+        const openModalBtn = document.getElementById('open-review-btn');
+        const modal = document.getElementById('review-modal');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+        const cancelBtn = document.getElementById('cancel-btn');
+        const reviewForm = document.getElementById('review-form');
+        const successOverlay = document.getElementById('success-overlay');
+        const closeSuccessBtn = document.getElementById('close-success-btn');
+
+        // Функция открытия модального окна
+        function openModal() {
+            modal.classList.add('active');
+            // Предотвращаем скролл фона
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Функция закрытия модального окна
+        function closeModal() {
+            modal.classList.remove('active');
+            reviewForm.reset(); // Очищаем поля формы
+            document.body.style.overflow = '';
+        }
+
+        // Функция открытия плашки об успехе
+        function openSuccess() {
+            successOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Функция закрытия плашки об успехе
+        function closeSuccess() {
+            successOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        // Обработчики событий
+        openModalBtn.addEventListener('click', openModal);
+        closeModalBtn.addEventListener('click', closeModal);
+        cancelBtn.addEventListener('click', closeModal);
+        closeSuccessBtn.addEventListener('click', closeSuccess);
+
+        // Закрытие по клику на фон (вне контента)
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+
+        successOverlay.addEventListener('click', (e) => {
+            if (e.target === successOverlay) {
+                closeSuccess();
+            }
+        });
+
+        // Обработка отправки формы
+        reviewForm.addEventListener('submit', function(e) {
+            e.preventDefault(); // Отменяем стандартное поведение формы
+
+            const username = document.getElementById('username-input').value.trim();
+            const reviewText = document.getElementById('review-textarea').value.trim();
+
+            if (username === '' || reviewText === '') {
+                alert('Пожалуйста, заполните все поля.');
+                return;
+            }
+
+            // ТУТ БУДЕТ ВАШ ЗАПРОС НА СЕРВЕР (AJAX/Fetch)
+            // Пример заглушки, имитирующей отправку на сервер:
+            console.log('Отправка отзыва:', { username, reviewText });
+            
+            // Показываем плашку об успехе
+            openSuccess();
+            
+            // Закрываем модальное окно
+            closeModal();
+
+            /* Пример реальной отправки:
+            fetch('/api/reviews', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, text: reviewText })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.success) {
+                    openSuccess();
+                    closeModal();
+                } else {
+                    alert('Ошибка отправки: ' + data.message);
+                }
+            });
+            */
+        });
+    </script>
+</body>
+</html>
